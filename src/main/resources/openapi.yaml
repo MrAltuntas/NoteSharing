@@ -1,21 +1,42 @@
 openapi: 3.0.3
 info:
   title: Note Sharing API
-  description: API for a course note sharing platform
-  version: 1.0.0
+  description: |-
+    API for a course note sharing platform that allows students to manage courses and share study notes.
+    The API supports user authentication, course management, and note sharing functionality.
+  termsOfService: http://www.notesharing.com/terms/
   contact:
     name: API Support
     email: support@notesharing.com
+    url: https://www.notesharing.com/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Note Sharing
+  url: https://www.notesharing.com/docs
 servers:
   - url: http://localhost:8080
     description: Local development server
+  - url: https://api.notesharing.com/v1
+    description: Production server
 tags:
   - name: auth
     description: Authentication operations
+    externalDocs:
+      description: Learn more about authentication
+      url: https://www.notesharing.com/docs/auth
   - name: courses
     description: Course management operations
+    externalDocs:
+      description: Learn more about courses
+      url: https://www.notesharing.com/docs/courses
   - name: notes
     description: Note management operations
+    externalDocs:
+      description: Learn more about notes
+      url: https://www.notesharing.com/docs/notes
 
 paths:
   # Authentication Endpoints
@@ -26,29 +47,27 @@ paths:
       summary: Register a new user
       description: Creates a new user account in the system
       operationId: register
+      requestBody:
+        $ref: '#/components/requestBodies/RegisterRequest'
       responses:
         '200':
           description: User registered successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "User registered successfully"
-                  userId:
-                    type: integer
-                    example: 12345
-                  username:
-                    type: string
-                    example: "newuser"
-                  email:
-                    type: string
-                    example: "newuser@example.com"
+                $ref: '#/components/schemas/Register200Response'
+        '400':
+          description: Invalid request - missing required fields or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/v1/auth/login:
     post:
@@ -57,38 +76,27 @@ paths:
       summary: User login
       description: Authenticates a user and returns a JWT token
       operationId: login
+      requestBody:
+        $ref: '#/components/requestBodies/LoginRequest'
       responses:
         '200':
           description: Login successful
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Login successful"
-                  token:
-                    type: string
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
-                  user:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        example: 12345
-                      username:
-                        type: string
-                        example: "testuser"
-                      email:
-                        type: string
-                        example: "user@example.com"
-                      role:
-                        type: string
-                        example: "USER"
+                $ref: '#/components/schemas/Login200Response'
+        '400':
+          description: Invalid request - missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication failed - invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/v1/auth/validate:
     post:
@@ -103,21 +111,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  valid:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Token is valid"
-                  expires:
-                    type: string
-                    format: date-time
-                    example: "2025-04-30T16:00:00.000Z"
-                  userId:
-                    type: integer
-                    example: 12345
+                $ref: '#/components/schemas/ValidateToken200Response'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # Course Endpoints
   /api/v1/courses:
@@ -127,6 +127,8 @@ paths:
       summary: Create a new course
       description: Creates a new course in the system
       operationId: createCourse
+      requestBody:
+        $ref: '#/components/requestBodies/CourseRequest'
       responses:
         '201':
           description: Course created successfully
@@ -134,6 +136,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CourseResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     get:
       tags:
@@ -141,27 +155,38 @@ paths:
       summary: Get all courses
       description: Returns a list of all courses
       operationId: getAllCourses
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          description: Sorting criteria (format - field,direction)
+          schema:
+            type: string
+            example: "title,asc"
       responses:
         '200':
           description: List of courses
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Courses retrieved successfully"
-                  totalCourses:
-                    type: integer
-                    example: 3
-                  courses:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Course'
+                $ref: '#/components/schemas/CourseListResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/v1/courses/{courseId}:
     parameters:
@@ -186,6 +211,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CourseResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     put:
       tags:
@@ -193,6 +224,8 @@ paths:
       summary: Update course
       description: Updates an existing course
       operationId: updateCourse
+      requestBody:
+        $ref: '#/components/requestBodies/CourseRequest'
       responses:
         '200':
           description: Course updated successfully
@@ -200,6 +233,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CourseResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
       tags:
@@ -213,18 +258,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Course deleted successfully"
-                  courseId:
-                    type: integer
-                    format: int64
-                    example: 101
+                $ref: '#/components/schemas/DeleteResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/v1/courses/{courseId}/rate:
     parameters:
@@ -242,31 +282,21 @@ paths:
       summary: Rate course
       description: Adds a rating to a course
       operationId: rateCourse
+      requestBody:
+        $ref: '#/components/requestBodies/RatingRequest'
       responses:
         '200':
           description: Course rated successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Course rated successfully"
-                  courseId:
-                    type: integer
-                    format: int64
-                    example: 101
-                  rating:
-                    type: number
-                    format: float
-                    example: 4.5
-                  totalRatings:
-                    type: integer
-                    example: 132
+                $ref: '#/components/schemas/RatingResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/v1/courses/search:
     get:
@@ -288,24 +318,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Search results retrieved successfully"
-                  query:
-                    type: string
-                    example: "spring"
-                  totalResults:
-                    type: integer
-                    example: 2
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Course'
+                $ref: '#/components/schemas/SearchResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/v1/courses/{courseId}/visit:
     parameters:
@@ -329,21 +348,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Course visit recorded"
-                  courseId:
-                    type: integer
-                    format: int64
-                    example: 101
-                  visitCount:
-                    type: integer
-                    example: 245
+                $ref: '#/components/schemas/VisitResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # Note Endpoints
   /api/v1/notes/courses/{courseId}:
@@ -362,6 +373,8 @@ paths:
       summary: Add note
       description: Adds a note to a course
       operationId: addNote
+      requestBody:
+        $ref: '#/components/requestBodies/NoteRequest'
       responses:
         '201':
           description: Note added successfully
@@ -369,6 +382,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NoteResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     get:
       tags:
@@ -382,25 +407,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Notes retrieved successfully"
-                  courseId:
-                    type: integer
-                    format: int64
-                    example: 101
-                  totalNotes:
-                    type: integer
-                    example: 3
-                  notes:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Note'
+                $ref: '#/components/schemas/NotesListResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/v1/notes/{noteId}:
     parameters:
@@ -425,6 +438,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NoteResponse'
+        '404':
+          description: Note not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     put:
       tags:
@@ -432,6 +451,8 @@ paths:
       summary: Update note
       description: Updates an existing note
       operationId: updateNote
+      requestBody:
+        $ref: '#/components/requestBodies/NoteRequest'
       responses:
         '200':
           description: Note updated successfully
@@ -439,6 +460,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NoteResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Note not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
       tags:
@@ -452,22 +485,330 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Note deleted successfully"
-                  noteId:
-                    type: integer
-                    format: int64
-                    example: 201
+                $ref: '#/components/schemas/DeleteResponse'
+        '404':
+          description: Note not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
+  # Common schemas for reuse
   schemas:
-    Course:
+    # Request/Response schemas
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: "newuser"
+          description: "Username for the new account"
+        email:
+          type: string
+          format: email
+          example: "newuser@example.com"
+          description: "Email address for the new account"
+        password:
+          type: string
+          format: password
+          example: "securePassword123"
+          description: "Password for the new account"
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: "testuser"
+          description: "Username for authentication"
+        password:
+          type: string
+          format: password
+          example: "password123"
+          description: "Password for authentication"
+
+    CourseRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: "Introduction to Computer Science"
+          description: "Course title"
+        description:
+          type: string
+          example: "A comprehensive introduction to computer science fundamentals."
+          description: "Course description"
+        instructor:
+          type: string
+          example: "Prof. John Smith"
+          description: "Course instructor"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["programming", "computer science", "beginner"]
+          description: "Tags associated with the course"
+
+    NoteRequest:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          example: "Week 1 - Introduction to Algorithms"
+          description: "Note title"
+        content:
+          type: string
+          example: "This note contains key points from the first week lecture on algorithms."
+          description: "Note content"
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentDTO'
+          description: "Attachments for the note"
+
+    RatingRequest:
+      type: object
+      required:
+        - rating
+      properties:
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          example: 4.5
+          description: "Rating value between 0 and 5"
+
+    # Response schemas
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error message details"
+        errorCode:
+          type: string
+          example: "RESOURCE_NOT_FOUND"
+
+    DeleteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Resource deleted successfully"
+        id:
+          type: integer
+          format: int64
+          example: 101
+
+    Register200Response:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "User registered successfully"
+        userId:
+          type: integer
+          example: 12345
+        username:
+          type: string
+          example: "newuser"
+        email:
+          type: string
+          example: "newuser@example.com"
+
+    Login200Response:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Login successful"
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
+        user:
+          $ref: '#/components/schemas/UserDTO'
+
+    ValidateToken200Response:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Token is valid"
+        expires:
+          type: string
+          format: date-time
+          example: "2025-04-30T16:00:00.000Z"
+        userId:
+          type: integer
+          example: 12345
+
+    CourseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Course created successfully"
+        course:
+          $ref: '#/components/schemas/CourseDTO'
+
+    CourseListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Courses retrieved successfully"
+        totalCourses:
+          type: integer
+          example: 3
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseDTO'
+
+    SearchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Search results retrieved successfully"
+        query:
+          type: string
+          example: "spring"
+        totalResults:
+          type: integer
+          example: 2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseDTO'
+
+    RatingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Course rated successfully"
+        courseId:
+          type: integer
+          format: int64
+          example: 101
+        rating:
+          type: number
+          format: float
+          example: 4.5
+        totalRatings:
+          type: integer
+          example: 132
+
+    VisitResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Course visit recorded"
+        courseId:
+          type: integer
+          format: int64
+          example: 101
+        visitCount:
+          type: integer
+          example: 245
+
+    NoteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Note added successfully"
+        note:
+          $ref: '#/components/schemas/NoteDTO'
+
+    NotesListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Notes retrieved successfully"
+        courseId:
+          type: integer
+          format: int64
+          example: 101
+        totalNotes:
+          type: integer
+          example: 3
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteDTO'
+
+    # DTO schemas
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+        username:
+          type: string
+          example: "testuser"
+        email:
+          type: string
+          example: "user@example.com"
+        role:
+          type: string
+          example: "USER"
+
+    CourseDTO:
       type: object
       properties:
         id:
@@ -476,13 +817,13 @@ components:
           example: 101
         title:
           type: string
-          example: "Sample Course 101"
+          example: "Introduction to Computer Science"
         description:
           type: string
-          example: "This is a sample course description. This course contains information to help you learn Spring Boot."
+          example: "A comprehensive introduction to computer science fundamentals."
         instructor:
           type: string
-          example: "Prof. John Doe"
+          example: "Prof. John Smith"
         createdAt:
           type: string
           format: date-time
@@ -505,21 +846,9 @@ components:
           type: array
           items:
             type: string
-          example: ["spring", "java", "web", "programming"]
+          example: ["programming", "computer science", "beginner"]
 
-    CourseResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        message:
-          type: string
-          example: "Course created successfully"
-        course:
-          $ref: '#/components/schemas/Course'
-
-    Note:
+    NoteDTO:
       type: object
       properties:
         id:
@@ -532,10 +861,10 @@ components:
           example: 101
         title:
           type: string
-          example: "Sample Note 201"
+          example: "Week 1 - Introduction to Algorithms"
         content:
           type: string
-          example: "This is a sample note content. This note contains important information about Spring Boot."
+          example: "This note contains key points from the first week lecture on algorithms."
         author:
           type: string
           example: "User123"
@@ -553,26 +882,126 @@ components:
         attachments:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: integer
-                example: 301
-              name:
-                type: string
-                example: "document.pdf"
-              size:
-                type: integer
-                example: 1048576
+            $ref: '#/components/schemas/AttachmentDTO'
 
-    NoteResponse:
+    AttachmentDTO:
       type: object
       properties:
-        success:
-          type: boolean
-          example: true
-        message:
+        id:
+          type: integer
+          example: 301
+        name:
           type: string
-          example: "Note added successfully"
-        note:
-          $ref: '#/components/schemas/Note'
+          example: "document.pdf"
+        size:
+          type: integer
+          example: 1048576
+
+  # Request body definitions
+  requestBodies:
+    RegisterRequest:
+      description: Registration information for a new user
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegisterRequest'
+          examples:
+            student:
+              summary: Standard student registration
+              value:
+                username: "student2025"
+                email: "student@example.com"
+                password: "SecureP@ss123"
+            instructor:
+              summary: Instructor registration
+              value:
+                username: "professor"
+                email: "professor@university.edu"
+                password: "Faculty$2025"
+
+    LoginRequest:
+      description: Credentials for user authentication
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginRequest'
+          examples:
+            standard:
+              summary: Standard login
+              value:
+                username: "student2025"
+                password: "SecureP@ss123"
+
+    CourseRequest:
+      description: Course information to create or update
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CourseRequest'
+          examples:
+            programming:
+              summary: Programming course
+              value:
+                title: "Introduction to Python Programming"
+                description: "Learn the basics of Python programming language"
+                instructor: "Dr. Jane Smith"
+                tags: ["python", "programming", "beginner"]
+            database:
+              summary: Database course
+              value:
+                title: "Advanced Database Systems"
+                description: "Study of modern database management systems"
+                instructor: "Prof. Robert Johnson"
+                tags: ["database", "SQL", "advanced"]
+
+    NoteRequest:
+      description: Note information to create or update
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NoteRequest'
+          examples:
+            lecture:
+              summary: Lecture notes
+              value:
+                title: "Lecture 1 - Introduction"
+                content: "Key points from today's lecture on fundamental concepts."
+                attachments: [
+                  {
+                    "name": "lecture1_slides.pdf",
+                    "size": 2097152
+                  }
+                ]
+
+    RatingRequest:
+      description: Rating information for a course
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RatingRequest'
+          examples:
+            fiveStar:
+              summary: Five-star rating
+              value:
+                rating: 5.0
+            average:
+              summary: Average rating
+              value:
+                rating: 3.5
+
+  # Security schemes
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token authentication
+
+# Global security - applied to all operations unless overridden
+security:
+  - bearerAuth: []
