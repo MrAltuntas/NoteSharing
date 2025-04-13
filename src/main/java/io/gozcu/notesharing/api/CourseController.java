@@ -1,89 +1,69 @@
 package io.gozcu.notesharing.api;
 
+import io.gozcu.notesharing.model.CourseListResponse;
+import io.gozcu.notesharing.model.CourseRequest;
+import io.gozcu.notesharing.model.CourseResponse;
+import io.gozcu.notesharing.model.DeleteResponse;
+import io.gozcu.notesharing.model.RatingRequest;
+import io.gozcu.notesharing.model.RatingResponse;
+import io.gozcu.notesharing.model.SearchResponse;
+import io.gozcu.notesharing.model.VisitResponse;
 import io.gozcu.notesharing.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/courses")
-public class CourseController {
+public class CourseController implements CoursesApi {
 
     @Autowired
     private CourseService courseService;
 
-    @PostMapping
-    public ResponseEntity<Map<String, Object>> createCourse() {
-        Map<String, Object> response = courseService.createCourse();
-        boolean success = (boolean) response.getOrDefault("success", false);
-        return success
-                ? new ResponseEntity<>(response, HttpStatus.CREATED)
-                : new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    @Override
+    public ResponseEntity<CourseResponse> createCourse(CourseRequest courseRequest) {
+        CourseResponse response = courseService.createCourse(courseRequest);
+        return ResponseEntity.status(201).body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllCourses() {
-        Map<String, Object> response = courseService.getAllCourses();
-        boolean success = (boolean) response.getOrDefault("success", false);
-        return success
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    @Override
+    public ResponseEntity<CourseListResponse> getAllCourses(Integer page, Integer size, String sort) {
+        CourseListResponse response = courseService.getAllCourses(page, size, sort);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{courseId}")
-    public ResponseEntity<Map<String, Object>> getCourseById(@PathVariable Long courseId) {
-        Map<String, Object> response = courseService.getCourseById(courseId);
-        boolean success = (boolean) response.getOrDefault("success", false);
-        return success
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    @Override
+    public ResponseEntity<CourseResponse> getCourseById(Long courseId) {
+        CourseResponse response = courseService.getCourseById(courseId);
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{courseId}")
-    public ResponseEntity<Map<String, Object>> updateCourse(@PathVariable Long courseId) {
-        Map<String, Object> response = courseService.updateCourse(courseId);
-        boolean success = (boolean) response.getOrDefault("success", false);
-        return success
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    @Override
+    public ResponseEntity<CourseResponse> updateCourse(Long courseId, CourseRequest courseRequest) {
+        CourseResponse response = courseService.updateCourse(courseId, courseRequest);
+        return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{courseId}")
-    public ResponseEntity<Map<String, Object>> deleteCourse(@PathVariable Long courseId) {
-        Map<String, Object> response = courseService.deleteCourse(courseId);
-        boolean success = (boolean) response.getOrDefault("success", false);
-        return success
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    @Override
+    public ResponseEntity<DeleteResponse> deleteCourse(Long courseId) {
+        DeleteResponse response = courseService.deleteCourse(courseId);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{courseId}/rate")
-    public ResponseEntity<Map<String, Object>> rateCourse(@PathVariable Long courseId) {
-        Map<String, Object> response = courseService.rateCourse(courseId);
-        boolean success = (boolean) response.getOrDefault("success", false);
-        return success
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    @Override
+    public ResponseEntity<RatingResponse> rateCourse(Long courseId, RatingRequest ratingRequest) {
+        RatingResponse response = courseService.rateCourse(courseId, ratingRequest);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Map<String, Object>> searchCourses(@RequestParam String query) {
-        Map<String, Object> response = courseService.searchCourses(query);
-        boolean success = (boolean) response.getOrDefault("success", false);
-        return success
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    @Override
+    public ResponseEntity<SearchResponse> searchCourses(String query) {
+        SearchResponse response = courseService.searchCourses(query);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{courseId}/visit")
-    public ResponseEntity<Map<String, Object>> visitCourse(@PathVariable Long courseId) {
-        Map<String, Object> response = courseService.visitCourse(courseId);
-        boolean success = (boolean) response.getOrDefault("success", false);
-        return success
-                ? ResponseEntity.ok(response)
-                : new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    @Override
+    public ResponseEntity<VisitResponse> visitCourse(Long courseId) {
+        VisitResponse response = courseService.visitCourse(courseId);
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,14 +1,21 @@
 package io.gozcu.notesharing.service;
 
-import java.util.Map;
+import io.gozcu.notesharing.model.CourseListResponse;
+import io.gozcu.notesharing.model.CourseRequest;
+import io.gozcu.notesharing.model.CourseResponse;
+import io.gozcu.notesharing.model.DeleteResponse;
+import io.gozcu.notesharing.model.RatingRequest;
+import io.gozcu.notesharing.model.RatingResponse;
+import io.gozcu.notesharing.model.SearchResponse;
+import io.gozcu.notesharing.model.VisitResponse;
 
 public interface CourseService {
-    Map<String, Object> createCourse();
-    Map<String, Object> getAllCourses();
-    Map<String, Object> getCourseById(Long courseId);
-    Map<String, Object> updateCourse(Long courseId);
-    Map<String, Object> deleteCourse(Long courseId);
-    Map<String, Object> rateCourse(Long courseId);
-    Map<String, Object> searchCourses(String query);
-    Map<String, Object> visitCourse(Long courseId);
+    CourseResponse createCourse(CourseRequest courseRequest);
+    CourseListResponse getAllCourses(Integer page, Integer size, String sort);
+    CourseResponse getCourseById(Long courseId);
+    CourseResponse updateCourse(Long courseId, CourseRequest courseRequest);
+    DeleteResponse deleteCourse(Long courseId);
+    RatingResponse rateCourse(Long courseId, RatingRequest ratingRequest);
+    SearchResponse searchCourses(String query);
+    VisitResponse visitCourse(Long courseId);
 }

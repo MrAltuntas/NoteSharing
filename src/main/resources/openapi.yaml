@@ -37,6 +37,11 @@ tags:
     externalDocs:
       description: Learn more about notes
       url: https://www.notesharing.com/docs/notes
+  - name: enrollments
+    description: Course enrollment operations
+    externalDocs:
+      description: Learn more about enrollments
+      url: https://www.notesharing.com/docs/enrollments
 
 paths:
   # Authentication Endpoints
@@ -261,6 +266,90 @@ paths:
                 $ref: '#/components/schemas/DeleteResponse'
         '404':
           description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # New Enrollment Endpoints
+  /api/v1/courses/{courseId}/enrollments:
+    parameters:
+      - name: courseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+        description: ID of the course
+
+    post:
+      tags:
+        - enrollments
+      summary: Enroll student in course
+      description: Enrolls a student in a specific course
+      operationId: enrollStudentInCourse
+      requestBody:
+        $ref: '#/components/requestBodies/EnrollmentRequest'
+      responses:
+        '200':
+          description: Student enrolled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Course or student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Student already enrolled in course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - enrollments
+      summary: Get enrolled students
+      description: Returns a list of students enrolled in a course
+      operationId: getEnrolledStudents
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of enrolled students
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentsResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -592,6 +681,18 @@ components:
           example: 4.5
           description: "Rating value between 0 and 5"
 
+    # New Enrollment Request Schema
+    EnrollmentRequest:
+      type: object
+      required:
+        - studentId
+      properties:
+        studentId:
+          type: integer
+          format: int64
+          example: 12345
+          description: "ID of the student to enroll in the course"
+
     # Response schemas
     ErrorResponse:
       type: object
@@ -790,6 +891,50 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/NoteDTO'
+
+    # New Enrollment Response Schemas
+    EnrollmentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Student enrolled successfully"
+        courseId:
+          type: integer
+          format: int64
+          example: 101
+        studentId:
+          type: integer
+          format: int64
+          example: 12345
+        enrollmentDate:
+          type: string
+          format: date-time
+          example: "2025-04-15T10:30:00.000Z"
+
+    EnrollmentsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Enrolled students retrieved successfully"
+        courseId:
+          type: integer
+          format: int64
+          example: 101
+        totalStudents:
+          type: integer
+          example: 3
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDTO'
 
     # DTO schemas
     UserDTO:
@@ -993,6 +1138,20 @@ components:
               summary: Average rating
               value:
                 rating: 3.5
+
+    # New Enrollment Request Body
+    EnrollmentRequest:
+      description: Student enrollment information
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnrollmentRequest'
+          examples:
+            standard:
+              summary: Standard enrollment
+              value:
+                studentId: 12345
 
   # Security schemes
   securitySchemes:

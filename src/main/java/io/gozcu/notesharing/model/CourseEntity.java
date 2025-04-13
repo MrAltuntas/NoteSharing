@@ -44,6 +44,10 @@ public class CourseEntity {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private Set<NoteEntity> notes = new HashSet<>();
 
+    // Direct many-to-many relationship with User
+    @ManyToMany(mappedBy = "enrolledCourses")
+    private Set<User> enrolledStudents = new HashSet<>();
+
     // Getters and setters
     public Long getId() {
         return id;
@@ -131,6 +135,14 @@ public class CourseEntity {
 
     public void setNotes(Set<NoteEntity> notes) {
         this.notes = notes;
+    }
+
+    public Set<User> getEnrolledStudents() {
+        return enrolledStudents;
+    }
+
+    public void setEnrolledStudents(Set<User> enrolledStudents) {
+        this.enrolledStudents = enrolledStudents;
     }
 
     // Constructors

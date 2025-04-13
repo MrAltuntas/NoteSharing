@@ -1,8 +1,21 @@
 package io.gozcu.notesharing.service;
 
+import io.gozcu.notesharing.model.CourseDTO;
 import io.gozcu.notesharing.model.CourseEntity;
+import io.gozcu.notesharing.model.CourseListResponse;
+import io.gozcu.notesharing.model.CourseRequest;
+import io.gozcu.notesharing.model.CourseResponse;
+import io.gozcu.notesharing.model.DeleteResponse;
+import io.gozcu.notesharing.model.RatingRequest;
+import io.gozcu.notesharing.model.RatingResponse;
+import io.gozcu.notesharing.model.SearchResponse;
+import io.gozcu.notesharing.model.VisitResponse;
 import io.gozcu.notesharing.repository.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,10 +23,8 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,125 +36,151 @@ public class CourseServiceImpl implements CourseService {
     private CourseRepository courseRepository;
 
     @Override
-    public Map<String, Object> createCourse() {
+    public CourseResponse createCourse(CourseRequest courseRequest) {
         try {
-            // Create a new course entity
+            // Create a new course entity from request
             CourseEntity courseEntity = new CourseEntity();
-            courseEntity.setTitle("Sample Course");
-            courseEntity.setDescription("This is a sample course description");
-            courseEntity.setInstructor("Prof. John Doe");
+            courseEntity.setTitle(courseRequest.getTitle());
+            courseEntity.setDescription(courseRequest.getDescription());
+            courseEntity.setInstructor(courseRequest.getInstructor());
+
+            // Set tags if provided
+            if (courseRequest.getTags() != null && !courseRequest.getTags().isEmpty()) {
+                courseEntity.setTags(new HashSet<>(courseRequest.getTags()));
+            }
 
             // Save entity
             courseEntity = courseRepository.save(courseEntity);
 
             // Create response
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Course created successfully");
-            response.put("course", convertEntityToMap(courseEntity));
+            CourseResponse response = new CourseResponse();
+            response.setSuccess(true);
+            response.setMessage("Course created successfully");
+            response.setCourse(convertEntityToDTO(courseEntity));
 
             return response;
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Failed to create course: " + e.getMessage());
+            CourseResponse response = new CourseResponse();
+            response.setSuccess(false);
+            response.setMessage("Failed to create course: " + e.getMessage());
             return response;
         }
     }
 
     @Override
-    public Map<String, Object> getAllCourses() {
+    public CourseListResponse getAllCourses(Integer page, Integer size, String sort) {
         try {
-            // Get all courses from repository
-            List<CourseEntity> courseEntities = courseRepository.findAll();
+            // Create pageable request
+            Pageable pageable;
+            if (sort != null && !sort.isEmpty()) {
+                String[] sortParams = sort.split(",");
+                String sortField = sortParams[0];
+                Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc") ?
+                        Sort.Direction.DESC : Sort.Direction.ASC;
+                pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+            } else {
+                pageable = PageRequest.of(page, size);
+            }
 
-            // Convert entities to map objects
-            List<Map<String, Object>> courses = courseEntities.stream()
-                    .map(this::convertEntityToMap)
+            // Get all courses from repository with pagination
+            Page<CourseEntity> coursesPage = courseRepository.findAll(pageable);
+            List<CourseEntity> courseEntities = coursesPage.getContent();
+
+            // Convert entities to DTOs
+            List<CourseDTO> courseDTOs = courseEntities.stream()
+                    .map(this::convertEntityToDTO)
                     .collect(Collectors.toList());
 
             // Create response
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Courses retrieved successfully");
-            response.put("totalCourses", courses.size());
-            response.put("courses", courses);
+            CourseListResponse response = new CourseListResponse();
+            response.setSuccess(true);
+            response.setMessage("Courses retrieved successfully");
+            response.setTotalCourses((int) coursesPage.getTotalElements());
+            response.setCourses(courseDTOs);
 
             return response;
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Error retrieving courses: " + e.getMessage());
+            CourseListResponse response = new CourseListResponse();
+            response.setSuccess(false);
+            response.setMessage("Error retrieving courses: " + e.getMessage());
             return response;
         }
     }
 
     @Override
-    public Map<String, Object> getCourseById(Long courseId) {
+    public CourseResponse getCourseById(Long courseId) {
         try {
             // Find course by ID
             Optional<CourseEntity> courseOpt = courseRepository.findById(courseId);
 
-            Map<String, Object> response = new HashMap<>();
+            CourseResponse response = new CourseResponse();
 
             if (courseOpt.isPresent()) {
                 CourseEntity courseEntity = courseOpt.get();
-                response.put("success", true);
-                response.put("message", "Course retrieved successfully");
-                response.put("course", convertEntityToMap(courseEntity));
+                response.setSuccess(true);
+                response.setMessage("Course retrieved successfully");
+                response.setCourse(convertEntityToDTO(courseEntity));
             } else {
-                response.put("success", false);
-                response.put("message", "Course not found with ID: " + courseId);
+                response.setSuccess(false);
+                response.setMessage("Course not found with ID: " + courseId);
             }
 
             return response;
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Error retrieving course: " + e.getMessage());
+            CourseResponse response = new CourseResponse();
+            response.setSuccess(false);
+            response.setMessage("Error retrieving course: " + e.getMessage());
             return response;
         }
     }
 
     @Override
-    public Map<String, Object> updateCourse(Long courseId) {
+    public CourseResponse updateCourse(Long courseId, CourseRequest courseRequest) {
         try {
             // Find course by ID
             Optional<CourseEntity> courseOpt = courseRepository.findById(courseId);
 
-            Map<String, Object> response = new HashMap<>();
+            CourseResponse response = new CourseResponse();
 
             if (courseOpt.isPresent()) {
                 CourseEntity courseEntity = courseOpt.get();
 
                 // Update course fields
-                courseEntity.setTitle("Updated Course Title");
-                courseEntity.setDescription("This is an updated course description");
-                courseEntity.setInstructor("Prof. Jane Smith");
+                courseEntity.setTitle(courseRequest.getTitle());
+                if (courseRequest.getDescription() != null) {
+                    courseEntity.setDescription(courseRequest.getDescription());
+                }
+                if (courseRequest.getInstructor() != null) {
+                    courseEntity.setInstructor(courseRequest.getInstructor());
+                }
+                if (courseRequest.getTags() != null) {
+                    courseEntity.setTags(new HashSet<>(courseRequest.getTags()));
+                }
+
                 courseEntity.setUpdatedAt(LocalDateTime.now());
 
                 // Save updated entity
                 courseEntity = courseRepository.save(courseEntity);
 
-                response.put("success", true);
-                response.put("message", "Course updated successfully");
-                response.put("course", convertEntityToMap(courseEntity));
+                response.setSuccess(true);
+                response.setMessage("Course updated successfully");
+                response.setCourse(convertEntityToDTO(courseEntity));
             } else {
-                response.put("success", false);
-                response.put("message", "Course not found with ID: " + courseId);
+                response.setSuccess(false);
+                response.setMessage("Course not found with ID: " + courseId);
             }
 
             return response;
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Error updating course: " + e.getMessage());
+            CourseResponse response = new CourseResponse();
+            response.setSuccess(false);
+            response.setMessage("Error updating course: " + e.getMessage());
             return response;
         }
     }
 
     @Override
-    public Map<String, Object> deleteCourse(Long courseId) {
+    public DeleteResponse deleteCourse(Long courseId) {
         try {
             // Check if course exists
             if (courseRepository.existsById(courseId)) {
@@ -151,41 +188,43 @@ public class CourseServiceImpl implements CourseService {
                 courseRepository.deleteById(courseId);
 
                 // Create response
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("message", "Course deleted successfully");
-                response.put("courseId", courseId);
+                DeleteResponse response = new DeleteResponse();
+                response.setSuccess(true);
+                response.setMessage("Course deleted successfully");
+                response.setId(courseId);
 
                 return response;
             } else {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Course not found with ID: " + courseId);
-                response.put("courseId", courseId);
+                DeleteResponse response = new DeleteResponse();
+                response.setSuccess(false);
+                response.setMessage("Course not found with ID: " + courseId);
+                response.setId(courseId);
 
                 return response;
             }
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Error deleting course: " + e.getMessage());
-            response.put("courseId", courseId);
+            DeleteResponse response = new DeleteResponse();
+            response.setSuccess(false);
+            response.setMessage("Error deleting course: " + e.getMessage());
+            response.setId(courseId);
 
             return response;
         }
     }
 
     @Override
-    public Map<String, Object> rateCourse(Long courseId) {
+    public RatingResponse rateCourse(Long courseId, RatingRequest ratingRequest) {
         try {
             // Find course by ID
             Optional<CourseEntity> courseOpt = courseRepository.findById(courseId);
 
+            RatingResponse response = new RatingResponse();
+
             if (courseOpt.isPresent()) {
                 CourseEntity courseEntity = courseOpt.get();
 
-                // Simulate rating
-                double rating = 4.5;
+                // Get rating from request
+                float rating = ratingRequest.getRating().floatValue();
                 double currentRating = courseEntity.getRating() != null ? courseEntity.getRating() : 0.0;
                 int totalRatings = courseEntity.getTotalRatings() != null ? courseEntity.getTotalRatings() : 0;
 
@@ -198,67 +237,63 @@ public class CourseServiceImpl implements CourseService {
                 courseRepository.save(courseEntity);
 
                 // Create response
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("message", "Course rated successfully");
-                response.put("courseId", courseId);
-                response.put("rating", newRating);
-                response.put("totalRatings", totalRatings + 1);
-
-                return response;
+                response.setSuccess(true);
+                response.setMessage("Course rated successfully");
+                response.setCourseId(courseId);
+                response.setRating((float)newRating);
+                response.setTotalRatings(totalRatings + 1);
             } else {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Course not found with ID: " + courseId);
-                response.put("courseId", courseId);
-
-                return response;
+                response.setSuccess(false);
+                response.setMessage("Course not found with ID: " + courseId);
+                response.setCourseId(courseId);
             }
-        } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Error rating course: " + e.getMessage());
-            response.put("courseId", courseId);
 
+            return response;
+        } catch (Exception e) {
+            RatingResponse response = new RatingResponse();
+            response.setSuccess(false);
+            response.setMessage("Error rating course: " + e.getMessage());
+            response.setCourseId(courseId);
             return response;
         }
     }
 
     @Override
-    public Map<String, Object> searchCourses(String query) {
+    public SearchResponse searchCourses(String query) {
         try {
             // Search for courses
             List<CourseEntity> courseEntities = courseRepository.search(query);
 
-            // Convert entities to map objects
-            List<Map<String, Object>> courses = courseEntities.stream()
-                    .map(this::convertEntityToMap)
+            // Convert entities to DTOs
+            List<CourseDTO> courseDTOs = courseEntities.stream()
+                    .map(this::convertEntityToDTO)
                     .collect(Collectors.toList());
 
             // Create response
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Search results retrieved successfully");
-            response.put("query", query);
-            response.put("totalResults", courses.size());
-            response.put("results", courses);
+            SearchResponse response = new SearchResponse();
+            response.setSuccess(true);
+            response.setMessage("Search results retrieved successfully");
+            response.setQuery(query);
+            response.setTotalResults(courseDTOs.size());
+            response.setResults(courseDTOs);
 
             return response;
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Error searching courses: " + e.getMessage());
-            response.put("query", query);
-
+            SearchResponse response = new SearchResponse();
+            response.setSuccess(false);
+            response.setMessage("Error searching courses: " + e.getMessage());
+            response.setQuery(query);
             return response;
         }
     }
 
     @Override
-    public Map<String, Object> visitCourse(Long courseId) {
+    public VisitResponse visitCourse(Long courseId) {
         try {
             // Find course by ID
             Optional<CourseEntity> courseOpt = courseRepository.findById(courseId);
+
+            VisitResponse response = new VisitResponse();
 
             if (courseOpt.isPresent()) {
                 CourseEntity courseEntity = courseOpt.get();
@@ -271,59 +306,52 @@ public class CourseServiceImpl implements CourseService {
                 courseRepository.save(courseEntity);
 
                 // Create response
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("message", "Course visit recorded");
-                response.put("courseId", courseId);
-                response.put("visitCount", visits + 1);
-
-                return response;
+                response.setSuccess(true);
+                response.setMessage("Course visit recorded");
+                response.setCourseId(courseId);
+                response.setVisitCount(visits + 1);
             } else {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Course not found with ID: " + courseId);
-                response.put("courseId", courseId);
-
-                return response;
+                response.setSuccess(false);
+                response.setMessage("Course not found with ID: " + courseId);
+                response.setCourseId(courseId);
             }
-        } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Error recording course visit: " + e.getMessage());
-            response.put("courseId", courseId);
 
+            return response;
+        } catch (Exception e) {
+            VisitResponse response = new VisitResponse();
+            response.setSuccess(false);
+            response.setMessage("Error recording course visit: " + e.getMessage());
+            response.setCourseId(courseId);
             return response;
         }
     }
 
-    // Helper method to convert entity to map
-    private Map<String, Object> convertEntityToMap(CourseEntity entity) {
-        Map<String, Object> courseMap = new HashMap<>();
-        courseMap.put("id", entity.getId());
-        courseMap.put("title", entity.getTitle());
-        courseMap.put("description", entity.getDescription());
-        courseMap.put("instructor", entity.getInstructor());
+    // Helper method to convert entity to DTO
+    private CourseDTO convertEntityToDTO(CourseEntity entity) {
+        CourseDTO courseDTO = new CourseDTO();
+        courseDTO.setId(entity.getId());
+        courseDTO.setTitle(entity.getTitle());
+        courseDTO.setDescription(entity.getDescription());
+        courseDTO.setInstructor(entity.getInstructor());
 
-        // Convert LocalDateTime to ISO string
+        // Convert LocalDateTime to OffsetDateTime
         if (entity.getCreatedAt() != null) {
-            courseMap.put("createdAt", entity.getCreatedAt().atOffset(ZoneOffset.UTC).toString());
+            courseDTO.setCreatedAt(entity.getCreatedAt().atOffset(ZoneOffset.UTC));
         }
 
         if (entity.getUpdatedAt() != null) {
-            courseMap.put("updatedAt", entity.getUpdatedAt().atOffset(ZoneOffset.UTC).toString());
+            courseDTO.setUpdatedAt(entity.getUpdatedAt().atOffset(ZoneOffset.UTC));
         }
 
-        courseMap.put("rating", entity.getRating());
-        courseMap.put("totalRatings", entity.getTotalRatings());
-        courseMap.put("totalVisits", entity.getTotalVisits());
+        courseDTO.setRating(entity.getRating() != null ? entity.getRating().floatValue() : 0.0f);
+        courseDTO.setTotalRatings(entity.getTotalRatings());
+        courseDTO.setTotalVisits(entity.getTotalVisits());
 
         // Convert tags
         if (entity.getTags() != null) {
-            courseMap.put("tags", new ArrayList<>(entity.getTags()));
-        } else {
-            courseMap.put("tags", new ArrayList<>());
+            courseDTO.setTags(new ArrayList<>(entity.getTags()));
         }
 
-        return courseMap;
+        return courseDTO;
     }
 }

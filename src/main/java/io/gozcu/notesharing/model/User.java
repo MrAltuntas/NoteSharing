@@ -33,6 +33,15 @@ public class User {
     @OneToMany(mappedBy = "author")
     private Set<NoteEntity> notes = new HashSet<>();
 
+    // Direct many-to-many relationship with Course
+    @ManyToMany
+    @JoinTable(
+            name = "enrollments",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id")
+    )
+    private Set<CourseEntity> enrolledCourses = new HashSet<>();
+
     // Getters and setters
     public Long getId() {
         return id;
@@ -96,6 +105,25 @@ public class User {
 
     public void setNotes(Set<NoteEntity> notes) {
         this.notes = notes;
+    }
+
+    public Set<CourseEntity> getEnrolledCourses() {
+        return enrolledCourses;
+    }
+
+    public void setEnrolledCourses(Set<CourseEntity> enrolledCourses) {
+        this.enrolledCourses = enrolledCourses;
+    }
+
+    // Helper methods for managing relationships
+    public void enrollInCourse(CourseEntity course) {
+        this.enrolledCourses.add(course);
+        course.getEnrolledStudents().add(this);
+    }
+
+    public void unenrollFromCourse(CourseEntity course) {
+        this.enrolledCourses.remove(course);
+        course.getEnrolledStudents().remove(this);
     }
 
     // Constructors
