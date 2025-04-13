@@ -1,6 +1,7 @@
 # Note Sharing API
 
 ## Project Status & Alignment
+https://github.com/MrAltuntas/NoteSharing.git
 
 This submission represents the third assignment in the series, featuring significant improvements:
 
