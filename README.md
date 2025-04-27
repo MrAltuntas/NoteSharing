@@ -2,7 +2,7 @@
 ## Project Status & Alignment
 
 - Backend Repository: https://github.com/MrAltuntas/NoteSharing.git
-- Frontend Repository: https://github.com/your-username/NoteSharing-Frontend.git
+- Frontend Repository: https://github.com/MrAltuntas/NoteSharing-Frontend
 
 ## Architecture
 
