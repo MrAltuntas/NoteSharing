@@ -1,128 +1,176 @@
-# Note Sharing API
-
+# Note Sharing Platform
 ## Project Status & Alignment
-https://github.com/MrAltuntas/NoteSharing.git
 
-This submission represents the third assignment in the series, featuring significant improvements:
-
-- **Fully Functional APIs**: login, register, course management, and enrollment endpoints are fully implemented and functional.
-- **Complete Many-to-Many Relationship**: A proper many-to-many relationship is established between users and courses, allowing students to enroll in multiple courses and courses to have multiple students.
-- **Aligned Project Structure**: The project structure has been refined to closely mirror the instructor’s reference implementation, including updated pom.xml dependencies and plugins. This ensures a well-organized, layered architecture and consistent project dependencies, correcting the discrepancies noted in the first two assignments.
-- **Persistent Data Storage**: Data is now stored in a database rather than in memory, using JPA/Hibernate with H2 database.
+- Backend Repository: https://github.com/MrAltuntas/NoteSharing.git
+- Frontend Repository: https://github.com/your-username/NoteSharing-Frontend.git
 
 ## Architecture
 
-The application follows a layered architecture pattern:
+### Backend (Spring Boot)
+
+The backend follows a layered architecture pattern:
 
 1. **Controller Layer**: Handles HTTP requests and responses
     - `AuthController`: Authentication operations (login, register)
     - `CourseController`: Course management operations
     - `EnrollmentController`: Course enrollment operations
+    - `ApiStatisticsController`: API usage statistics operations
 
 2. **Service Layer**: Contains business logic
     - `AuthService`: User authentication and registration logic
     - `CourseService`: Course management logic
     - `EnrollmentService`: Course enrollment logic
+    - `ApiStatisticsService`: API usage tracking and analytics logic
 
 3. **Repository Layer**: Data access through JPA/Hibernate
     - `UserRepository`: User entity operations
     - `CourseRepository`: Course entity operations
+    - `ApiStatisticsRepository`: API statistics operations
 
 4. **Models**:
     - DTO (Data Transfer Objects): Used for API requests/responses
     - Entity: Database entities with JPA annotations
 
+5. **Interceptors**:
+    - `ApiStatisticsInterceptor`: Automatically tracks API usage for all API endpoints
+
+### Frontend (Next.js)
+
+The frontend follows a modern React architecture:
+
+1. **Pages**: Next.js pages corresponding to different routes
+    - `register`: User registration page
+    - `login`: User login page
+    - `course-list`: Course browsing page
+    - `create-course`: Course creation page
+
+
 ## Key Features
 
-- User authentication (login/register)
+- User authentication (register, login)
 - Course management (CRUD operations)
-- Many-to-many relationship between users and courses
-- Course ratings and visits tracking
-- Search functionality for courses
-
-## Database Schema
-
-The application uses an H2 database with the following key tables:
-
-- `users`: Stores user information
-- `courses`: Stores course information
-- `enrollments`: Join table for the many-to-many relationship between users and courses
-- `course_tags`: Stores tags associated with courses
-- `notes`: Stores notes created by users for courses
+- Course browsing with search, filtering, and sorting
+- API usage statistics and analytics
 
 ## Prerequisites
 
+### Backend
 - Java JDK 17 or higher
 - Maven 3.6.0 or higher
 
-## Building and Running the Application
+### Frontend
+- Node.js 16 or higher
+- npm or yarn
 
-### 1. Clone the repository
+## Building and Running the Applications
 
+### Backend Setup
+
+1. Clone the repository
 ```bash
-git clone [repository-url]
-cd [repository-directory]
+git clone https://github.com/MrAltuntas/NoteSharing.git
+cd NoteSharing
 ```
 
-### 2. Build the application
-
+2. Build the application
 ```bash
 mvn clean package
 ```
 
-### 3. Run the application
-
+3. Run the application
 ```bash
 java -jar target/notesharing-0.0.1-SNAPSHOT.jar
 ```
 
 Or using Maven:
-
 ```bash
 mvn spring-boot:run
 ```
 
-### 4. Access the application
+The backend API will be available at: `http://localhost:8080`
 
-- The API will be available at: `http://localhost:8080`
-- H2 Database Console: `http://localhost:8080/h2-console`
-    - JDBC URL: `jdbc:h2:file:./data/notedb`
-    - Username: `sa`
-    - Password: `password`
+### Frontend Setup
+
+1. Clone the repository
+```bash
+git clone https://github.com/your-username/NoteSharing-Frontend.git
+cd NoteSharing-Frontend
+```
+
+2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Run the development server
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+The frontend application will be available at: `http://localhost:3000`
 
 ## API Documentation
 
-The API is documented using OpenAPI (Swagger). You can access the API documentation at:
-
+The backend API is documented using OpenAPI (Swagger). You can access the API documentation at:
 ```
 http://localhost:8080/swagger-ui.html
 ```
 
-## Many-to-Many Relationship
+## Frontend Pages
 
-The application implements a many-to-many relationship between users (students) and courses:
+| Page | URL | Description |
+|------|-----|-------------|
+| Home | `/` | Landing page |
+| Register | `/register` | User registration page |
+| Login | `/login` | User login page |
+| Course List | `/course-list` | Browse available courses |
+| Create Course | `/create-course` | Create a new course |
 
-- A student can enroll in multiple courses
-- A course can have multiple students enrolled
+## Database Information
 
-This relationship is implemented using JPA annotations:
+The application uses an H2 database with the following configuration:
+- H2 Database Console: `http://localhost:8080/h2-console`
+- JDBC URL: `jdbc:h2:file:./data/notedb`
+- Username: `sa`
+- Password: `password`
 
-```java
-// In User.java (owner side)
-@ManyToMany
-@JoinTable(
-    name = "enrollments",
-    joinColumns = @JoinColumn(name = "user_id"),
-    inverseJoinColumns = @JoinColumn(name = "course_id")
-)
-private Set<CourseEntity> enrolledCourses = new HashSet<>();
+## API Statistics
 
-// In CourseEntity.java (non-owner side)
-@ManyToMany(mappedBy = "enrolledCourses")
-private Set<User> enrolledStudents = new HashSet<>();
-```
+The application includes comprehensive API usage tracking and analytics:
 
-## Testing the API
+### Features
+- Automatic tracking of all API requests
+- Records endpoint, HTTP method, IP address, status code, response time, and more
+- User-friendly statistics dashboard
+
+### API Statistics Endpoints
+- `GET /api/v1/statistics`: Get a summary of API usage including most used endpoints, success rates, response times, and time-based analytics
+- `GET /api/v1/statistics/details`: Get detailed API usage records with optional filtering by endpoint, method, status code, date range, and more
+
+### Tracked Data
+The system automatically collects the following data for each API request:
+- **Endpoint path**: Which API endpoint was accessed
+- **HTTP method**: GET, POST, PUT, DELETE, etc.
+- **IP address**: Client IP address
+- **Status code**: HTTP response status (200, 404, 500, etc.)
+- **Response time**: How long the request took to process (in milliseconds)
+- **User agent**: Client browser/application information
+- **Timestamp**: When the request occurred
+- **User ID**: Which user made the request (if authenticated)
+
+### Implementation
+The statistics feature is implemented using:
+- Spring Interceptors to automatically capture API calls
+- JPA/Hibernate for storing statistics data
+- Custom analytics for generating insights
+
+## Testing the Application
+
+### Testing the Backend API
 
 You can test the API using tools like Postman or curl. Here are some example API endpoints:
 
@@ -131,3 +179,32 @@ You can test the API using tools like Postman or curl. Here are some example API
 - `GET /api/v1/courses`: Get all courses
 - `POST /api/v1/courses/{courseId}/enrollments`: Enroll a student in a course
 - `GET /api/v1/courses/{courseId}/enrollments`: Get all students enrolled in a course
+- `GET /api/v1/statistics`: Get API usage statistics summary
+- `GET /api/v1/statistics/details?endpoint=/api/v1/courses`: Get detailed statistics for the courses endpoint
+
+### Testing the Frontend
+
+Access the frontend at http://localhost:3000 and try the following workflow:
+
+1. Register a new account
+2. Login with your credentials
+3. Browse the course list
+4. Create a new course
+5. Enroll in courses
+
+## Technologies Used
+
+### Backend
+- Spring Boot
+- Spring Security with JWT
+- JPA/Hibernate
+- H2 Database
+- Maven
+- Spring Interceptors (for API statistics)
+
+### Frontend
+- Next.js
+- React
+- TypeScript
+- Material UI
+- Tailwind CSS
