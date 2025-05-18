@@ -44,7 +44,7 @@ public class CourseEntity {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private Set<NoteEntity> notes = new HashSet<>();
 
-    // Direct many-to-many relationship with User
+
     @ManyToMany(mappedBy = "enrolledCourses")
     private Set<User> enrolledStudents = new HashSet<>();
 

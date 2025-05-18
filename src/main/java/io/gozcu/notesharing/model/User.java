@@ -33,7 +33,7 @@ public class User {
     @OneToMany(mappedBy = "author")
     private Set<NoteEntity> notes = new HashSet<>();
 
-    // Direct many-to-many relationship with Course
+
     @ManyToMany
     @JoinTable(
             name = "enrollments",

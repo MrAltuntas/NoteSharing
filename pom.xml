@@ -88,6 +88,28 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
+
+
+		<!-- Apache Jena Core - RDF veri modeli için temel kütüphane -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+			<version>4.8.0</version>
+		</dependency>
+
+		<!-- Apache Jena ARQ - SPARQL sorgulama için -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+			<version>4.8.0</version>
+		</dependency>
+
+		<!-- Apache Jena TDB - Jena'nın üçlü depolaması (opsiyonel) -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-tdb2</artifactId>
+			<version>4.8.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -95,6 +117,15 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<mainClass>io.gozcu.notesharing.semantic.RdfProcessor</mainClass>
+				</configuration>
 			</plugin>
 
 			<plugin>

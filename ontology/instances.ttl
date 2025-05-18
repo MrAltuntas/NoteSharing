@@ -1,0 +1,211 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ns: <http://www.noteSharing.com/ontology#> .
+@prefix ex: <http://www.noteSharing.com/instances#> .
+
+# Students
+ex:student1 rdf:type ns:Student ;
+    ns:username "john_doe" ;
+    ns:email "john.doe@example.com" ;
+    ns:createdAt "2025-01-15T10:30:00Z"^^xsd:dateTime .
+
+ex:student2 rdf:type ns:Student ;
+    ns:username "alice_smith" ;
+    ns:email "alice.smith@example.com" ;
+    ns:createdAt "2025-01-20T14:45:00Z"^^xsd:dateTime .
+
+ex:student3 rdf:type ns:Student ;
+    ns:username "bob_johnson" ;
+    ns:email "bob.johnson@example.com" ;
+    ns:createdAt "2025-01-25T09:15:00Z"^^xsd:dateTime .
+
+# Instructors
+ex:instructor1 rdf:type ns:Instructor ;
+    ns:username "prof_smith" ;
+    ns:email "prof.smith@university.edu" ;
+    ns:createdAt "2024-12-10T08:00:00Z"^^xsd:dateTime .
+
+ex:instructor2 rdf:type ns:Instructor ;
+    ns:username "dr_jones" ;
+    ns:email "dr.jones@university.edu" ;
+    ns:createdAt "2024-12-15T11:30:00Z"^^xsd:dateTime .
+
+# Courses
+ex:course1 rdf:type ns:Course ;
+    ns:title "Introduction to Computer Science" ;
+    ns:description "A comprehensive introduction to computer science fundamentals" ;
+    ns:hasInstructor ex:instructor1 ;
+    ns:totalRatings 120 ;
+    ns:totalVisits 2345 ;
+    ns:createdAt "2025-01-05T09:00:00Z"^^xsd:dateTime ;
+    ns:updatedAt "2025-01-05T09:00:00Z"^^xsd:dateTime .
+
+ex:course2 rdf:type ns:Course ;
+    ns:title "Advanced Database Systems" ;
+    ns:description "Study of modern database management systems" ;
+    ns:hasInstructor ex:instructor2 ;
+    ns:totalRatings 85 ;
+    ns:totalVisits 1520 ;
+    ns:createdAt "2025-01-10T10:15:00Z"^^xsd:dateTime ;
+    ns:updatedAt "2025-01-10T10:15:00Z"^^xsd:dateTime .
+
+ex:course3 rdf:type ns:Course ;
+    ns:title "Web Development Fundamentals" ;
+    ns:description "Learn the basics of web development with HTML, CSS, and JavaScript" ;
+    ns:hasInstructor ex:instructor1 ;
+    ns:totalRatings 95 ;
+    ns:totalVisits 1890 ;
+    ns:createdAt "2025-01-15T14:30:00Z"^^xsd:dateTime ;
+    ns:updatedAt "2025-01-15T14:30:00Z"^^xsd:dateTime .
+
+# Tags
+ex:tag1 rdf:type ns:Tag ;
+    ns:tagName "programming" .
+
+ex:tag2 rdf:type ns:Tag ;
+    ns:tagName "computer science" .
+
+ex:tag3 rdf:type ns:Tag ;
+    ns:tagName "beginner" .
+
+ex:tag4 rdf:type ns:Tag ;
+    ns:tagName "database" .
+
+ex:tag5 rdf:type ns:Tag ;
+    ns:tagName "SQL" .
+
+ex:tag6 rdf:type ns:Tag ;
+    ns:tagName "advanced" .
+
+ex:tag7 rdf:type ns:Tag ;
+    ns:tagName "web development" .
+
+ex:tag8 rdf:type ns:Tag ;
+    ns:tagName "HTML" .
+
+ex:tag9 rdf:type ns:Tag ;
+    ns:tagName "CSS" .
+
+# Course-Tag relationships
+ex:course1 ns:hasTag ex:tag1 ;
+    ns:hasTag ex:tag2 ;
+    ns:hasTag ex:tag3 .
+
+ex:course2 ns:hasTag ex:tag4 ;
+    ns:hasTag ex:tag5 ;
+    ns:hasTag ex:tag6 .
+
+ex:course3 ns:hasTag ex:tag7 ;
+    ns:hasTag ex:tag8 ;
+    ns:hasTag ex:tag9 .
+
+# Notes
+ex:note1 rdf:type ns:Note ;
+    ns:title "Week 1 - Introduction to Algorithms" ;
+    ns:content "This note contains key points from the first week lecture on algorithms." ;
+    ns:hasCourse ex:course1 ;
+    ns:hasCreator ex:instructor1 ;
+    ns:likes 25 ;
+    ns:createdAt "2025-01-07T13:45:00Z"^^xsd:dateTime ;
+    ns:updatedAt "2025-01-07T13:45:00Z"^^xsd:dateTime .
+
+ex:note2 rdf:type ns:Note ;
+    ns:title "Week 2 - Data Structures" ;
+    ns:content "Overview of fundamental data structures: arrays, linked lists, stacks, and queues." ;
+    ns:hasCourse ex:course1 ;
+    ns:hasCreator ex:instructor1 ;
+    ns:likes 18 ;
+    ns:createdAt "2025-01-14T15:20:00Z"^^xsd:dateTime ;
+    ns:updatedAt "2025-01-14T15:20:00Z"^^xsd:dateTime .
+
+ex:note3 rdf:type ns:Note ;
+    ns:title "Relational Database Concepts" ;
+    ns:content "Introduction to relational database theory and normalization forms." ;
+    ns:hasCourse ex:course2 ;
+    ns:hasCreator ex:instructor2 ;
+    ns:likes 32 ;
+    ns:createdAt "2025-01-12T10:30:00Z"^^xsd:dateTime ;
+    ns:updatedAt "2025-01-12T10:30:00Z"^^xsd:dateTime .
+
+ex:note4 rdf:type ns:Note ;
+    ns:title "HTML Basics" ;
+    ns:content "Introduction to HTML structure, tags, and attributes." ;
+    ns:hasCourse ex:course3 ;
+    ns:hasCreator ex:instructor1 ;
+    ns:likes 15 ;
+    ns:createdAt "2025-01-16T09:15:00Z"^^xsd:dateTime ;
+    ns:updatedAt "2025-01-16T09:15:00Z"^^xsd:dateTime .
+
+# Attachments
+ex:attachment1 rdf:type ns:Attachment ;
+    ns:fileName "week1_slides.pdf" ;
+    ns:fileSize 2097152 .
+
+ex:attachment2 rdf:type ns:Attachment ;
+    ns:fileName "data_structures_examples.zip" ;
+    ns:fileSize 3145728 .
+
+ex:attachment3 rdf:type ns:Attachment ;
+    ns:fileName "database_diagrams.pdf" ;
+    ns:fileSize 1572864 .
+
+ex:attachment4 rdf:type ns:Attachment ;
+    ns:fileName "html_examples.zip" ;
+    ns:fileSize 1048576 .
+
+# Note-Attachment relationships
+ex:note1 ns:hasAttachment ex:attachment1 .
+ex:note2 ns:hasAttachment ex:attachment2 .
+ex:note3 ns:hasAttachment ex:attachment3 .
+ex:note4 ns:hasAttachment ex:attachment4 .
+
+# Enrollments
+ex:enrollment1 rdf:type ns:Enrollment ;
+    ns:enrollmentDate "2025-01-18T10:00:00Z"^^xsd:dateTime .
+
+ex:enrollment2 rdf:type ns:Enrollment ;
+    ns:enrollmentDate "2025-01-19T14:30:00Z"^^xsd:dateTime .
+
+ex:enrollment3 rdf:type ns:Enrollment ;
+    ns:enrollmentDate "2025-01-20T11:15:00Z"^^xsd:dateTime .
+
+ex:enrollment4 rdf:type ns:Enrollment ;
+    ns:enrollmentDate "2025-01-22T09:45:00Z"^^xsd:dateTime .
+
+ex:enrollment5 rdf:type ns:Enrollment ;
+    ns:enrollmentDate "2025-01-25T16:20:00Z"^^xsd:dateTime .
+
+# Student-Enrollment-Course relationships
+ex:student1 ns:hasEnrollment ex:enrollment1 ;
+    ns:enrolledIn ex:course1 .
+
+ex:student1 ns:hasEnrollment ex:enrollment2 ;
+    ns:enrolledIn ex:course2 .
+
+ex:student2 ns:hasEnrollment ex:enrollment3 ;
+    ns:enrolledIn ex:course1 .
+
+ex:student2 ns:hasEnrollment ex:enrollment4 ;
+    ns:enrolledIn ex:course3 .
+
+ex:student3 ns:hasEnrollment ex:enrollment5 ;
+    ns:enrolledIn ex:course2 .
+
+# Ratings
+ex:rating1 rdf:type ns:Rating ;
+    ns:ratingValue 4.5 ;
+    ns:hasCreator ex:student1 .
+
+ex:rating2 rdf:type ns:Rating ;
+    ns:ratingValue 5.0 ;
+    ns:hasCreator ex:student2 .
+
+ex:rating3 rdf:type ns:Rating ;
+    ns:ratingValue 4.0 ;
+    ns:hasCreator ex:student3 .
+
+# Course-Rating relationships
+ex:course1 ns:hasRating ex:rating1 .
+ex:course2 ns:hasRating ex:rating2 .
+ex:course3 ns:hasRating ex:rating3 .

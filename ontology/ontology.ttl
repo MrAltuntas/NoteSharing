@@ -1,0 +1,195 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix ns: <http://www.noteSharing.com/ontology#> .
+
+# Classes
+ns:Person rdf:type rdfs:Class ;
+    rdfs:label "Person" ;
+    rdfs:comment "A person who interacts with the system" .
+
+ns:User rdf:type rdfs:Class ;
+    rdfs:subClassOf ns:Person ;
+    rdfs:label "User" ;
+    rdfs:comment "A registered user of the system" .
+
+ns:Student rdf:type rdfs:Class ;
+    rdfs:subClassOf ns:User ;
+    rdfs:label "Student" ;
+    rdfs:comment "A user who enrolls in courses and accesses notes" .
+
+ns:Instructor rdf:type rdfs:Class ;
+    rdfs:subClassOf ns:User ;
+    rdfs:label "Instructor" ;
+    rdfs:comment "A user who creates and manages courses" .
+
+ns:Course rdf:type rdfs:Class ;
+    rdfs:label "Course" ;
+    rdfs:comment "An educational course containing notes and materials" .
+
+ns:Note rdf:type rdfs:Class ;
+    rdfs:label "Note" ;
+    rdfs:comment "A learning resource shared within a course" .
+
+ns:Attachment rdf:type rdfs:Class ;
+    rdfs:label "Attachment" ;
+    rdfs:comment "A file attached to a note" .
+
+ns:Tag rdf:type rdfs:Class ;
+    rdfs:label "Tag" ;
+    rdfs:comment "A keyword or category associated with a course" .
+
+ns:Enrollment rdf:type rdfs:Class ;
+    rdfs:label "Enrollment" ;
+    rdfs:comment "A relationship between a student and a course" .
+
+ns:Rating rdf:type rdfs:Class ;
+    rdfs:label "Rating" ;
+    rdfs:comment "A numerical evaluation of a course" .
+
+# Properties - Object Properties
+ns:hasCreator rdf:type rdf:Property ;
+    rdfs:domain rdfs:Resource ;
+    rdfs:range ns:User ;
+    rdfs:label "has creator" ;
+    rdfs:comment "Relates a resource to the user who created it" .
+
+ns:hasCourse rdf:type rdf:Property ;
+    rdfs:domain ns:Note ;
+    rdfs:range ns:Course ;
+    rdfs:label "has course" ;
+    rdfs:comment "Relates a note to its course" .
+
+ns:hasEnrollment rdf:type rdf:Property ;
+    rdfs:domain ns:Student ;
+    rdfs:range ns:Enrollment ;
+    rdfs:label "has enrollment" ;
+    rdfs:comment "Relates a student to their enrollment" .
+
+ns:hasAttachment rdf:type rdf:Property ;
+    rdfs:domain ns:Note ;
+    rdfs:range ns:Attachment ;
+    rdfs:label "has attachment" ;
+    rdfs:comment "Relates a note to its attachments" .
+
+ns:hasTag rdf:type rdf:Property ;
+    rdfs:domain ns:Course ;
+    rdfs:range ns:Tag ;
+    rdfs:label "has tag" ;
+    rdfs:comment "Relates a course to its tags" .
+
+ns:hasNote rdf:type rdf:Property ;
+    rdfs:domain ns:Course ;
+    rdfs:range ns:Note ;
+    rdfs:label "has note" ;
+    rdfs:comment "Relates a course to its notes" .
+
+ns:hasInstructor rdf:type rdf:Property ;
+    rdfs:domain ns:Course ;
+    rdfs:range ns:Instructor ;
+    rdfs:label "has instructor" ;
+    rdfs:comment "Relates a course to its instructor" .
+
+ns:hasRating rdf:type rdf:Property ;
+    rdfs:domain ns:Course ;
+    rdfs:range ns:Rating ;
+    rdfs:label "has rating" ;
+    rdfs:comment "Relates a course to a rating" .
+
+ns:enrolledIn rdf:type rdf:Property ;
+    rdfs:domain ns:Student ;
+    rdfs:range ns:Course ;
+    rdfs:label "enrolled in" ;
+    rdfs:comment "Relates a student to courses they are enrolled in" .
+
+# Properties - Datatype Properties
+ns:username rdf:type rdf:Property ;
+    rdfs:domain ns:User ;
+    rdfs:range xsd:string ;
+    rdfs:label "username" ;
+    rdfs:comment "The username of a user" .
+
+ns:email rdf:type rdf:Property ;
+    rdfs:domain ns:User ;
+    rdfs:range xsd:string ;
+    rdfs:label "email" ;
+    rdfs:comment "The email address of a user" .
+
+ns:title rdf:type rdf:Property ;
+    rdfs:domain rdfs:Resource ;
+    rdfs:range xsd:string ;
+    rdfs:label "title" ;
+    rdfs:comment "The title of a resource" .
+
+ns:description rdf:type rdf:Property ;
+    rdfs:domain rdfs:Resource ;
+    rdfs:range xsd:string ;
+    rdfs:label "description" ;
+    rdfs:comment "A description of a resource" .
+
+ns:content rdf:type rdf:Property ;
+    rdfs:domain ns:Note ;
+    rdfs:range xsd:string ;
+    rdfs:label "content" ;
+    rdfs:comment "The content of a note" .
+
+ns:likes rdf:type rdf:Property ;
+    rdfs:domain ns:Note ;
+    rdfs:range xsd:integer ;
+    rdfs:label "likes" ;
+    rdfs:comment "Number of likes for a note" .
+
+ns:ratingValue rdf:type rdf:Property ;
+    rdfs:domain ns:Rating ;
+    rdfs:range xsd:float ;
+    rdfs:label "rating value" ;
+    rdfs:comment "The numeric value of a rating" .
+
+ns:totalRatings rdf:type rdf:Property ;
+    rdfs:domain ns:Course ;
+    rdfs:range xsd:integer ;
+    rdfs:label "total ratings" ;
+    rdfs:comment "The total number of ratings for a course" .
+
+ns:totalVisits rdf:type rdf:Property ;
+    rdfs:domain ns:Course ;
+    rdfs:range xsd:integer ;
+    rdfs:label "total visits" ;
+    rdfs:comment "The total number of visits for a course" .
+
+ns:fileName rdf:type rdf:Property ;
+    rdfs:domain ns:Attachment ;
+    rdfs:range xsd:string ;
+    rdfs:label "file name" ;
+    rdfs:comment "The name of an attachment file" .
+
+ns:fileSize rdf:type rdf:Property ;
+    rdfs:domain ns:Attachment ;
+    rdfs:range xsd:integer ;
+    rdfs:label "file size" ;
+    rdfs:comment "The size of an attachment file in bytes" .
+
+ns:createdAt rdf:type rdf:Property ;
+    rdfs:domain rdfs:Resource ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "created at" ;
+    rdfs:comment "The date and time when a resource was created" .
+
+ns:updatedAt rdf:type rdf:Property ;
+    rdfs:domain rdfs:Resource ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "updated at" ;
+    rdfs:comment "The date and time when a resource was last updated" .
+
+ns:enrollmentDate rdf:type rdf:Property ;
+    rdfs:domain ns:Enrollment ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "enrollment date" ;
+    rdfs:comment "The date when a student enrolled in a course" .
+
+ns:tagName rdf:type rdf:Property ;
+    rdfs:domain ns:Tag ;
+    rdfs:range xsd:string ;
+    rdfs:label "tag name" ;
+    rdfs:comment "The name of a tag" .
